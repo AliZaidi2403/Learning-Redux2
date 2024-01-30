@@ -94,6 +94,8 @@ const postSlice = createSlice({
 //RTK uses immerjs under the hood that allows to write js likes this, this only works inside createSlice
 export const { postAdded, reactionAdded } = postSlice.actions;
 export const selectAllPosts = (state) => state.posts.posts;
+export const selectPostById = (state, postId) =>
+  state.posts.posts.find((post) => post.id === postId);
 export const getPostsStatus = (state) => state.posts.status;
 export const getPostsError = (state) => state.posts.error;
 //by this way if in future our states shape changes we do not have to make change in every components
