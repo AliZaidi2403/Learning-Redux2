@@ -11,8 +11,40 @@ export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
 export const addNewpost = createAsyncThunk(
   "posts/addPost",
   async (initialPost) => {
-    const response = await axios.post(POSTS_URL, initialPost);
-    return response.data;
+    try {
+      const response = await axios.post(POSTS_URL, initialPost);
+      return response.data;
+    } catch (err) {
+      return err.message;
+    }
+  }
+);
+export const updatePost = createAsyncThunk(
+  "posts/updatePost",
+  async (initialPost) => {
+    const { id } = initialPost;
+    try {
+      const response = await axios.put(`${POSTS_URL}/${id}`, initialPost);
+      return response.data;
+    } catch (err) {
+      return initialPost;
+      //we cant edit post created by ourself bcz we are not truly interacting with api as the post created
+      // by us are not actually created there
+    }
+  }
+);
+export const deletePost = createAsyncThunk(
+  "post/deletePost",
+  async (initialPost) => {
+    const { id } = initialPost;
+    try {
+      const response = await axios.delete(`${POSTS_URL}/${id}`);
+      //typically restApi send back the id of the post deleted but json placeholder send back the empty obj
+      if (response?.status === 200) return initialPost;
+      return `${response.status} : ${response.statusText}`;
+    } catch (err) {
+      return err.message;
+    }
   }
 );
 const initialState = {
@@ -88,6 +120,27 @@ const postSlice = createSlice({
         };
         action.payload.date = new Date().toISOString();
         state.posts.push(action.payload);
+      })
+      .addCase(updatePost.fulfilled, (state, action) => {
+        if (!action.payload?.id) {
+          console.log("Update could not complete");
+          console(action.payload);
+          return;
+        }
+        const { id } = action.payload;
+        action.payload.date = new Date().toISOString();
+        const posts = state.posts.filter((post) => post.id !== id);
+        state.posts = [...posts, action.payload];
+      })
+      .addCase(deletePost.fulfilled, (state, action) => {
+        if (!action.payload?.id) {
+          console.log("Operation Failed!");
+          console.log(action.payload);
+          return;
+        }
+        const { id } = action.payload;
+        const posts = state.posts.filter((post) => post.id !== id);
+        state.posts = posts;
       });
   },
 });
