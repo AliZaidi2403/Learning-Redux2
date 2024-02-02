@@ -16,11 +16,12 @@ function TodoList() {
     isSuccess,
     error,
   } = useGetTodosQuery();
-  const { addTodo } = useAddTodoMutation();
-  const { updateTodo } = useUpdateTodoMutation();
-  const { deleteTodo } = useDeleteTodoMutation();
+  const [addTodo] = useAddTodoMutation();
+  const [updateTodo] = useUpdateTodoMutation();
+  const [deleteTodo] = useDeleteTodoMutation();
   const handleSubmit = (e) => {
     e.preventDefault();
+    addTodo({ userId: 1, title: newTodo, completed: false });
     setNewTodo("");
   };
   const newItemSection = (
@@ -35,7 +36,7 @@ function TodoList() {
           placeholder="Enter a new todo"
         />
       </div>
-      <button type="button" className="submit">
+      <button className="submit">
         <FontAwesomeIcon icon={faUpload} />
       </button>
     </form>
@@ -44,7 +45,26 @@ function TodoList() {
   if (isFetching) {
     content = <p>Loading...</p>;
   } else if (isSuccess) {
-    content = JSON.stringify(todos);
+    content = todos.map((todo) => {
+      return (
+        <article key={todo.id}>
+          <div className="todo">
+            <input
+              type="checkbox"
+              checked={todo.completed}
+              id={todo.id}
+              onChange={() =>
+                updateTodo({ ...todo, completed: !todo.completed })
+              }
+            />
+            <label htmlFor={todo.id}>{todo.title}</label>
+          </div>
+          <button className="trash" onClick={() => deleteTodo({ id: todo.id })}>
+            <FontAwesomeIcon icon={faTrash} />
+          </button>
+        </article>
+      );
+    });
   } else if (isError) {
     content = <p>{error}</p>;
   }
