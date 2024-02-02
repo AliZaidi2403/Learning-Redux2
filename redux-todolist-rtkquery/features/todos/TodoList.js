@@ -1,9 +1,16 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
-
+import { useGetTodosQuery } from "../api/apiSlice";
 function TodoList() {
   const [newTodo, setNewTodo] = useState();
+  const {
+    data: todos,
+    isError,
+    isFetching,
+    isSuccess,
+    error,
+  } = useGetTodosQuery();
   const handleSubmit = (e) => {
     e.preventDefault();
     setNewTodo("");
@@ -26,7 +33,13 @@ function TodoList() {
     </form>
   );
   let content;
-
+  if (isFetching) {
+    content = <p>Loading...</p>;
+  } else if (isSuccess) {
+    content = JSON.stringify(todos);
+  } else if (isError) {
+    content = <p>{error}</p>;
+  }
   return (
     <main>
       <h1>Todo List </h1>
